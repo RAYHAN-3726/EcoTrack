@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Carbon Footprint Tracker</title>
+    <style>
+        :root {
+            --color-primary: #10b981;
+            --color-primary-dark: #059669;
+            --color-primary-light: #d1fae5;
+            --color-secondary: #0891b2;
+            --color-accent: #f59e0b;
+            --color-danger: #ef4444;
+            --color-bg: #f9fafb;
+            --color-surface: #ffffff;
+            --color-text: #1f2937;
+            --color-text-light: #6b7280;
+            --color-border: #e5e7eb;
+            --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .emoji {
+            font-size: 2.2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--color-border);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: none;
+            border: none;
+            color: var(--color-text-light);
+            font-size: 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--color-surface);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--color-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-family: var(--font-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--color-secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: #0e7490;
+        }
+
+        .btn-small {
+            padding: var(--spacing-xs) var(--spacing-md);
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .btn-danger {
+            background-color: var(--color-danger);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--color-primary-light) 0%, rgba(16, 185, 129, 0.05) 100%);
+            padding: var(--spacing-lg);
+            border-radius: 12px;
+            border: 2px solid var(--color-primary);
+            text-align: center;
+        }
+
+        .metric-card h3 {
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .metric-unit {
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: var(--spacing-md);
+            background: var(--color-bg);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-sm);
+            border-left: 4px solid var(--color-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-info h4 {
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .activity-info p {
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .activity-value {
+            text-align: right;
+        }
+
+        .activity-value .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .activity-value .unit {
+            color: var(--color-text-light);
+            font-size: 0.85rem;
+        }
+
+        .chart-container {
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-lg);
+            background: var(--color-bg);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: var(--spacing-md);
+            height: 300px;
+            margin-top: var(--spacing-lg);
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--color-primary), var(--color-primary-light));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            min-height: 40px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bar:hover {
+            filter: brightness(1.1);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: var(--color-primary);
+            font-size: 0.9rem;
+        }
+
+        .eco-tips {
+            background: linear-gradient(135deg, var(--color-accent) 0%, rgba(245, 158, 11, 0.1) 100%);
+            padding: var(--spacing-lg);
+            border-radius: 12px;
+            border-left: 4px solid var(--color-accent);
+        }
+
+        .eco-tips h3 {
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .eco-tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .eco-tips li {
+            padding: var(--spacing-sm) 0;
+            padding-left: var(--spacing-lg);
+            position: relative;
+            color: var(--color-text);
+        }
+
+        .eco-tips li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-accent);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: var(--spacing-md) 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: var(--spacing-md);
+            background: var(--color-bg);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .stat-box .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .stat-box .label {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-top: var(--spacing-xs);
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md);
+            background: var(--color-bg);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .comparison-item .name {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .comparison-item .value {
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--color-text-light);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bar-chart {
+                height: 250px;
+            }
+
+            .tab-btn {
+                font-size: 0.9rem;
+                padding: var(--spacing-sm);
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><span class="emoji">🌍</span> EcoTrack</h1>
+        <p>Track Your Carbon Footprint, Build a Sustainable Future</p>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tracker">📊 Activity Tracker</button>
+            <button class="tab-btn" data-tab="footprint">💨 Carbon Footprint</button>
+            <button class="tab-btn" data-tab="goals">🎯 Goals & Progress</button>
+            <button class="tab-btn" data-tab="analysis">📈 Analysis</button>
+            <button class="tab-btn" data-tab="tips">💡 Eco Tips</button>
+        </div>
+
+        <!-- Activity Tracker Tab -->
+        <div id="tracker" class="tab-content active">
+            <div class="card">
+                <h2>📝 Log Your Daily Activities</h2>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-lg);">Enter your daily activities to calculate your carbon footprint</p>
+                
+                <div class="form-group">
+                    <label for="activity-type">Activity Type</label>
+                    <select id="activity-type">
+                        <option value="">Select an activity...</option>
+                        <option value="driving">🚗 Driving (car)</option>
+                        <option value="public-transport">🚌 Public Transport</option>
+                        <option value="flights">✈️ Flights</option>
+                        <option value="electricity">⚡ Electricity Usage</option>
+                        <option value="water">💧 Water Usage</option>
+                        <option value="heating">🔥 Heating/Gas</option>
+                        <option value="food">🍔 Food Consumption</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="activity-value">Value</label>
+                        <input type="number" id="activity-value" placeholder="Enter quantity" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-unit">Unit</label>
+                        <select id="activity-unit">
+                            <option value="km">km (distance)</option>
+                            <option value="miles">miles (distance)</option>
+                            <option value="hours">hours</option>
+                            <option value="kWh">kWh (energy)</option>
+                            <option value="liters">liters (water)</option>
+                            <option value="kg">kg (weight)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="activity-date">Date</label>
+                    <input type="text" id="activity-date" placeholder="YYYY-MM-DD" value="">
+                </div>
+
+                <button class="btn" onclick="addActivity()">➕ Log Activity</button>
+            </div>
+
+            <div class="card">
+                <h2>📋 Recent Activities</h2>
+                <div id="activities-list">
+                    <div class="empty-state">
+                        <p>No activities logged yet. Start tracking your carbon footprint!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carbon Footprint Tab -->
+        <div id="footprint" class="tab-content">
+            <div class="card">
+                <h2>🌱 Your Carbon Footprint Summary</h2>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Today's Emissions</h3>
+                        <div class="metric-value" id="today-emissions">0</div>
+                        <div class="metric-unit">kg CO₂e</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Weekly Average</h3>
+                        <div class="metric-value" id="weekly-emissions">0</div>
+                        <div class="metric-unit">kg CO₂e/day</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Monthly Total</h3>
+                        <div class="metric-value" id="monthly-emissions">0</div>
+                        <div class="metric-unit">kg CO₂e</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Annual Projection</h3>
+                        <div class="metric-value" id="annual-emissions">0</div>
+                        <div class="metric-unit">tonnes CO₂e</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Emissions by Category</div>
+                    <div class="bar-chart" id="category-chart"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🔍 Emission Breakdown</h2>
+                <div id="emission-breakdown"></div>
+            </div>
+        </div>
+
+        <!-- Goals & Progress Tab -->
+        <div id="goals" class="tab-content">
+            <div class="card">
+                <h2>🎯 Set Your Reduction Goal</h2>
+                
+                <div class="form-group">
+                    <label for="goal-value">Target Monthly Emissions (kg CO₂e)</label>
+                    <input type="number" id="goal-value" placeholder="e.g., 200" step="10" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="goal-date">Target Date (YYYY-MM-DD)</label>
+                    <input type="text" id="goal-date" placeholder="YYYY-MM-DD">
+                </div>
+
+                <button class="btn" onclick="setGoal()">✓ Set Goal</button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Progress Tracking</h2>
+                <div id="goals-display"></div>
+            </div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content">
+            <div class="card">
+                <h2>📈 Detailed Analysis</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="number" id="total-activities">0</div>
+                        <div class="label">Total Activities</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" id="avg-daily">0</div>
+                        <div class="label">Avg Daily Emissions</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" id="highest-category">—</div>
+                        <div class="label">Top Category</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="number" id="data-span">0</div>
+                        <div class="label">Days Tracked</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">7-Day Emission Trend</div>
+                    <div class="bar-chart" id="trend-chart"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Comparison with Benchmarks</h2>
+                <p style="color: var(--color-text-light); margin-bottom: var(--spacing-lg);">How you compare to average benchmarks</p>
+                
+                <div class="comparison-item">
+                    <span class="name">Your Monthly Average</span>
+                    <span class="value" id="bench-yours">0 kg</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="name">Global Average</span>
+                    <span class="value">500 kg</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="name">Sustainable Target</span>
+                    <span class="value">200 kg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eco Tips Tab -->
+        <div id="tips" class="tab-content">
+            <div class="eco-tips">
+                <h3>🌿 Reduce Your Carbon Footprint</h3>
+                <ul>
+                    <li><strong>Transportation:</strong> Carpool, use public transit, cycle, or walk when possible. Electric vehicles reduce emissions by 50%.</li>
+                    <li><strong>Energy:</strong> Switch to renewable energy, use LED bulbs, improve insulation, and unplug devices when not in use.</li>
+                    <li><strong>Food:</strong> Reduce meat consumption, buy local produce, minimize food waste, and compost organic matter.</li>
+                    <li><strong>Water:</strong> Take shorter showers, fix leaks, install water-saving fixtures, and collect rainwater for plants.</li>
+                    <li><strong>Consumption:</strong> Buy less, choose sustainable products, recycle, repair instead of replace, and support eco-friendly brands.</li>
+                    <li><strong>Home:</strong> Use a programmable thermostat, weatherize your home, and choose renewable energy providers.</li>
+                </ul>
+            </div>
+
+            <div class="card" style="margin-top: var(--spacing-lg);">
+                <h2>📚 Impact of Small Changes</h2>
+                <div class="comparison-item">
+                    <span class="name">Using public transport 5 days/week instead of driving</span>
+                    <span class="value">-4.2 tonnes/year</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="name">Reducing meat consumption by 50%</span>
+                    <span class="value">-1.5 tonnes/year</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="name">Switching to renewable energy</span>
+                    <span class="value">-2.0 tonnes/year</span>
+                </div>
+                <div class="comparison-item">
+                    <span class="name">Flying once less internationally per year</span>
+                    <span class="value">-2.0 tonnes/year</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💾 Data Management</h2>
+                <button class="btn btn-secondary" onclick="exportData()">📥 Export Data</button>
+                <button class="btn btn-danger" style="margin-top: var(--spacing-md);" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Emission factors (kg CO2e per unit)
+        const emissionFactors = {
+            'driving': 0.21, // per km
+            'public-transport': 0.05, // per km
+            'flights': 0.25, // per km
+            'electricity': 0.92, // per kWh
+            'water': 0.0008, // per liter
+            'heating': 2.04, // per kWh
+            'food': { 'kg': 2.5 } // per kg
+        };
+
+        // Data storage
+        let activities = JSON.parse(localStorage.getItem('ecotrack_activities')) || [];
+        let goals = JSON.parse(localStorage.getItem('ecotrack_goals')) || [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setActivityDate();
+            setupTabs();
+            updateAllDisplays();
+        });
+
+        function setActivityDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('activity-date').value = today;
+        }
+
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            updateAllDisplays();
+        }
+
+        function addActivity() {
+            const type = document.getElementById('activity-type').value;
+            const value = parseFloat(document.getElementById('activity-value').value);
+            const unit = document.getElementById('activity-unit').value;
+            const date = document.getElementById('activity-date').value;
+
+            if (!type || !value || !date) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            let emissions = 0;
+            if (type === 'food') {
+                emissions = value * emissionFactors[type].kg;
+            } else {
+                emissions = value * emissionFactors[type];
+            }
+
+            const activity = {
+                id: Date.now(),
+                type,
+                value,
+                unit,
+                date,
+                emissions: emissions.toFixed(2)
+            };
+
+            activities.push(activity);
+            localStorage.setItem('ecotrack_activities', JSON.stringify(activities));
+            
+            document.getElementById('activity-type').value = '';
+            document.getElementById('activity-value').value = '';
+            updateAllDisplays();
+        }
+
+        function deleteActivity(id) {
+            activities = activities.filter(a => a.id !== id);
+            localStorage.setItem('ecotrack_activities', JSON.stringify(activities));
+            updateAllDisplays();
+        }
+
+        function setGoal() {
+            const value = parseFloat(document.getElementById('goal-value').value);
+            const date = document.getElementById('goal-date').value;
+
+            if (!value || !date) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const goal = {
+                id: Date.now(),
+                targetEmissions: value,
+                targetDate: date,
+                createdDate: new Date().toISOString().split('T')[0]
+            };
+
+            goals = [goal]; // Only keep one active goal
+            localStorage.setItem('ecotrack_goals', JSON.stringify(goals));
+            
+            document.getElementById('goal-value').value = '';
+            document.getElementById('goal-date').value = '';
+            updateAllDisplays();
+        }
+
+        function getActivitiesByDate(date) {
+            return activities.filter(a => a.date === date);
+        }
+
+        function getTotalEmissionsByDate(date) {
+            return getActivitiesByDate(date).reduce((sum, a) => sum + parseFloat(a.emissions), 0);
+        }
+
+        function getCategoryBreakdown() {
+            const breakdown = {};
+            activities.forEach(activity => {
+                if (!breakdown[activity.type]) {
+                    breakdown[activity.type] = 0;
+                }
+                breakdown[activity.type] += parseFloat(activity.emissions);
+            });
+            return breakdown;
+        }
+
+        function getLast7Days() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                days.push(date.toISOString().split('T')[0]);
+            }
+            return days;
+        }
+
+        function updateAllDisplays() {
+            updateActivitiesList();
+            updateFootprintMetrics();
+            updateCategoryChart();
+            updateAnalysis();
+            updateGoalsDisplay();
+        }
+
+        function updateActivitiesList() {
+            const container = document.getElementById('activities-list');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No activities logged yet. Start tracking your carbon footprint!</p></div>';
+                return;
+            }
+
+            const sorted = [...activities].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = '<ul class="activity-list">' + sorted.map(activity => `
+                <li class="activity-item">
+                    <div class="activity-info">
+                        <h4>${getActivityLabel(activity.type)}</h4>
+                        <p>${activity.value} ${activity.unit} on ${activity.date}</p>
+                    </div>
+                    <div class="activity-value">
+                        <div class="value">${activity.emissions}</div>
+                        <div class="unit">kg CO₂e</div>
+                        <button class="btn btn-small btn-danger" style="margin-top: var(--spacing-xs);" onclick="deleteActivity(${activity.id})">Remove</button>
+                    </div>
+                </li>
+            `).join('') + '</ul>';
+        }
+
+        function getActivityLabel(type) {
+            const labels = {
+                'driving': '🚗 Driving',
+                'public-transport': '🚌 Public Transport',
+                'flights': '✈️ Flights',
+                'electricity': '⚡ Electricity',
+                'water': '💧 Water',
+                'heating': '🔥 Heating',
+                'food': '🍔 Food'
+            };
+            return labels[type] || type;
+        }
+
+        function updateFootprintMetrics() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayEmissions = getTotalEmissionsByDate(today);
+            
+            const last7Days = getLast7Days();
+            const weekEmissions = last7Days.reduce((sum, day) => sum + getTotalEmissionsByDate(day), 0);
+            const avgWeekly = (weekEmissions / 7).toFixed(2);
+
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            const monthEmissions = activities
+                .filter(a => a.date.startsWith(currentMonth))
+                .reduce((sum, a) => sum + parseFloat(a.emissions), 0)
+                .toFixed(2);
+
+            const annualProjection = (monthEmissions * 12 / 1000).toFixed(2);
+
+            document.getElementById('today-emissions').textContent = todayEmissions.toFixed(2);
+            document.getElementById('weekly-emissions').textContent = avgWeekly;
+            document.getElementById('monthly-emissions').textContent = monthEmissions;
+            document.getElementById('annual-emissions').textContent = annualProjection;
+
+            updateEmissionBreakdown();
+        }
+
+        function updateEmissionBreakdown() {
+            const breakdown = getCategoryBreakdown();
+            const container = document.getElementById('emission-breakdown');
+
+            if (Object.keys(breakdown).length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No data to display. Log some activities first!</p></div>';
+                return;
+            }
+
+            const sorted = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+            const total = sorted.reduce((sum, [_, emissions]) => sum + emissions, 0);
+
+            container.innerHTML = sorted.map(([type, emissions]) => {
+                const percentage = ((emissions / total) * 100).toFixed(1);
+                return `
+                    <div style="margin-bottom: var(--spacing-lg);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                            <span style="font-weight: 600;">${getActivityLabel(type)}</span>
+                            <span style="color: var(--color-primary); font-weight: bold;">${emissions.toFixed(2)} kg (${percentage}%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%">${percentage}%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCategoryChart() {
+            const breakdown = getCategoryBreakdown();
+            const container = document.getElementById('category-chart');
+
+            if (Object.keys(breakdown).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--color-text-light);">No data to display</p>';
+                return;
+            }
+
+            const max = Math.max(...Object.values(breakdown));
+            const normalized = max === 0 ? {} : Object.entries(breakdown).reduce((acc, [key, val]) => {
+                acc[key] = (val / max) * 100;
+                return acc;
+            }, {});
+
+            container.innerHTML = Object.entries(normalized).map(([type, height]) => {
+                const emissions = breakdown[type].toFixed(2);
+                return `
+                    <div style="flex: 1; position: relative; display: flex; flex-direction: column; align-items: center;">
+                        <div class="bar-value">${emissions}</div>
+                        <div class="bar" style="height: ${height}%;"></div>
+                        <div class="bar-label">${getActivityLabel(type).split(' ')[1]}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAnalysis() {
+            const breakdown = getCategoryBreakdown();
+            const daysWithData = new Set(activities.map(a => a.date)).size;
+            const last7Days = getLast7Days();
+            const weekEmissions = last7Days.reduce((sum, day) => sum + getTotalEmissionsByDate(day), 0);
+            const avgDaily = (weekEmissions / 7).toFixed(2);
+
+            const topCategory = Object.entries(breakdown).sort((a, b) => b[1] - a[1])[0];
+
+            document.getElementById('total-activities').textContent = activities.length;
+            document.getElementById('avg-daily').textContent = avgDaily;
+            document.getElementById('highest-category').textContent = topCategory ? getActivityLabel(topCategory[0]).split(' ')[1] : '—';
+            document.getElementById('data-span').textContent = daysWithData;
+
+            updateTrendChart();
+            updateBenchmark();
+        }
+
+        function updateTrendChart() {
+            const last7Days = getLast7Days();
+            const chartData = last7Days.map(day => getTotalEmissionsByDate(day));
+            const max = Math.max(...chartData, 1);
+
+            const container = document.getElementById('trend-chart');
+            container.innerHTML = last7Days.map((day, index) => {
+                const height = (chartData[index] / max) * 100;
+                const dayName = new Date(day).toLocaleDateString('en-US', { weekday: 'short' });
+                return `
+                    <div style="flex: 1; position: relative; display: flex; flex-direction: column; align-items: center;">
+                        <div class="bar-value">${chartData[index].toFixed(1)}</div>
+                        <div class="bar" style="height: ${height}%;"></div>
+                        <div class="bar-label">${dayName}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBenchmark() {
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            const monthEmissions = activities
+                .filter(a => a.date.startsWith(currentMonth))
+                .reduce((sum, a) => sum + parseFloat(a.emissions), 0)
+                .toFixed(0);
+
+            document.getElementById('bench-yours').textContent = monthEmissions + ' kg';
+        }
+
+        function updateGoalsDisplay() {
+            const container = document.getElementById('goals-display');
+
+            if (goals.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No goals set yet. Create one to track your progress!</p></div>';
+                return;
+            }
+
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            const monthEmissions = activities
+                .filter(a => a.date.startsWith(currentMonth))
+                .reduce((sum, a) => sum + parseFloat(a.emissions), 0);
+
+            const goal = goals[0];
+            const progress = Math.min((monthEmissions / goal.targetEmissions) * 100, 100);
+            const remaining = Math.max(goal.targetEmissions - monthEmissions, 0);
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3 style="color: var(--color-primary); margin-bottom: var(--spacing-md);">Monthly Reduction Goal</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+                        <div>
+                            <p style="color: var(--color-text-light); margin-bottom: var(--spacing-sm);">Current Usage</p>
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">${monthEmissions.toFixed(0)} kg</div>
+                        </div>
+                        <div>
+                            <p style="color: var(--color-text-light); margin-bottom: var(--spacing-sm);">Target</p>
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--color-secondary);">${goal.targetEmissions.toFixed(0)} kg</div>
+                        </div>
+                    </div>
+
+                    <p style="margin-bottom: var(--spacing-sm); color: var(--color-text);">Progress to Goal</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%">${progress.toFixed(0)}%</div>
+                    </div>
+
+                    <div style="margin-top: var(--spacing-md); padding: var(--spacing-md); background: var(--color-bg); border-radius: 8px;">
+                        <p style="margin: 0; color: var(--color-text-light);">Emissions to reduce</p>
+                        <p style="margin: var(--spacing-sm) 0 0 0; font-size: 1.5rem; font-weight: bold; color: ${remaining === 0 ? 'var(--color-primary)' : 'var(--color-danger)'};">
+                            ${remaining.toFixed(0)} kg CO₂e
+                        </p>
+                    </div>
+
+                    <p style="margin-top: var(--spacing-lg); color: var(--color-text-light); font-size: 0.9rem;">Target Date: ${goal.targetDate}</p>
+                </div>
+            `;
+        }
+
+        function exportData() {
+            const data = {
+                activities,
+                goals,
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ecotrack_data_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+                activities = [];
+                goals = [];
+                localStorage.removeItem('ecotrack_activities');
+                localStorage.removeItem('ecotrack_goals');
+                updateAllDisplays();
+                alert('All data has been cleared.');
+            }
+        }
+    </script>
+</body>
+</html>
